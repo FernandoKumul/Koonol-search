@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.SplashKoonol" parent="Theme.SplashScreen">
+
+        <item name="windowSplashScreenBackground">#0B141B</item>
+
+        <item name="windowSplashScreenAnimatedIcon">@drawable/b_logodark</item>
+
+        <item name="postSplashScreenTheme">@style/Theme.Koonolsearch</item>
+    </style>
+
+</resources>
