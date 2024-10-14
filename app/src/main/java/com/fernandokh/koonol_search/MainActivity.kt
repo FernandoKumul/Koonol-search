@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
             KoonolsearchTheme {
                 Surface {
 
-                    SplashScreen {  }
+                    SplashScreen { 3000 }
                 }
             }
         }

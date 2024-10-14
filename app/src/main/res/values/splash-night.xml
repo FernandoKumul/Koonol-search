@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.SplashKoonol" parent="Theme.SplashScreen">
+    <style name="Theme.SplashNightKoonol" parent="Theme.SplashScreen">
 
         <item name="windowSplashScreenBackground">#0B141B</item>
 
