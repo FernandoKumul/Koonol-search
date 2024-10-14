@@ -30,39 +30,28 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             KoonolsearchTheme {
-                Surface {
+                LaunchedEffect(true) {
+                    delay(5000)
+                }
 
-                    SplashScreen { 3000 }
+                Surface(
+                    color =  if (isSystemInDarkTheme()) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surface,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Image(
+                            painter = painterResource(
+                                id = if (isSystemInDarkTheme()) R.drawable.b_logodark else R.drawable.b_logolight
+                            ),
+                            contentDescription = "App Logo",
+                            modifier = Modifier.size(300.dp)
+                        )
+                    }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun SplashScreen(onTimeout: () -> Unit) {
-    val isDarkTheme = isSystemInDarkTheme()
-
-    LaunchedEffect(true) {
-        delay(3000)
-        onTimeout()
-    }
-
-    Surface(
-        color = if (isDarkTheme) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Image(
-                painter = painterResource(
-                    id = if (isDarkTheme) R.drawable.b_logodark else R.drawable.b_logolight
-                ),
-                contentDescription = "App Logo",
-                modifier = Modifier.size(150.dp)
-            )
         }
     }
 }
