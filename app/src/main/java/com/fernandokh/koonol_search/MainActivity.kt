@@ -35,23 +35,28 @@ class MainActivity : ComponentActivity() {
                 }
 
                 Surface(
-                    color =  if (isSystemInDarkTheme()) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surface,
+                    color =  MaterialTheme.colorScheme.background,
                     modifier = Modifier.fillMaxSize()
                 ) {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        Image(
-                            painter = painterResource(
-                                id = if (isSystemInDarkTheme()) R.drawable.b_logodark else R.drawable.b_logolight
-                            ),
-                            contentDescription = "App Logo",
-                            modifier = Modifier.size(300.dp)
+                        Greeting(
+                            name = "Android",
+                            modifier = Modifier.padding()
                         )
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun Greeting(name: String, modifier: Modifier = Modifier) {
+    Text(
+        text = "Hello $name!",
+        modifier = modifier
+    )
 }
