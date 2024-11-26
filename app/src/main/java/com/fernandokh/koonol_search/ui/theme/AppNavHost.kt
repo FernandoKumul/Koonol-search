@@ -7,6 +7,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.fernandokh.koonol_search.data.DataStoreManager
 import com.fernandokh.koonol_search.ui.screens.HomeScreen
 import com.fernandokh.koonol_search.ui.screens.SalesStallInfoScreen
 import com.fernandokh.koonol_search.ui.screens.SalesStallMapScreen
@@ -40,10 +41,10 @@ sealed class Screen(val route: String) {
 
 @Composable
 fun AppNavHost(
-    modifier: Modifier = Modifier, navHostController: NavHostController
+    modifier: Modifier = Modifier, navHostController: NavHostController, dataStoreManager: DataStoreManager
 ) {
     NavHost(navHostController, startDestination = Screen.Home.route, modifier = modifier) {
-        composable(Screen.Home.route) { HomeScreen(navHostController) }
+        composable(Screen.Home.route) { HomeScreen(navHostController, dataStoreManager) }
         composable(
             Screen.Search.route,
             arguments = listOf(navArgument("query") { type = NavType.StringType })

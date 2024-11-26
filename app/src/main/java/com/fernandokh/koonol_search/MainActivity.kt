@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
+import com.fernandokh.koonol_search.data.DataStoreManager
 import com.fernandokh.koonol_search.ui.theme.AppNavHost
 import com.fernandokh.koonol_search.ui.theme.KoonolsearchTheme
 import kotlinx.coroutines.delay
@@ -23,6 +24,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         installSplashScreen()
         enableEdgeToEdge()
+        val dataStoreManager = DataStoreManager(applicationContext)
+
         setContent {
             KoonolsearchTheme(dynamicColor = false) {
                 LaunchedEffect(true) {
@@ -35,9 +38,7 @@ class MainActivity : ComponentActivity() {
                     Box(
                         contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()
                     ) {
-                        Surface(color = MaterialTheme.colorScheme.background) {
-                            MyApp()
-                        }
+                        MyApp(dataStoreManager)
                     }
                 }
             }
@@ -46,7 +47,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MyApp() {
+fun MyApp(dataStoreManager: DataStoreManager) {
     val navController = rememberNavController()
-    AppNavHost(navHostController = navController)
+    AppNavHost(navHostController = navController, dataStoreManager = dataStoreManager)
 }
