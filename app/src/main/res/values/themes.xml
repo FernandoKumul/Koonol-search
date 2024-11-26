@@ -9,5 +9,6 @@
         <item name="postSplashScreenTheme">@style/Theme.Koonolsearch</item>
     </style>
 
-    <style name="Theme.Koonolsearch" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Koonolsearch" parent="android:Theme.Material.Light.NoActionBar" >
+    </style>
 </resources>

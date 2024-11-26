@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.fernandokh.koonol_search"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -50,6 +50,30 @@ android {
 }
 
 dependencies {
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation (libs.converter.gson)
+    //Coroutines
+    implementation(libs.kotlinx.coroutines.android)
+
+    //Load images of Internet
+    implementation(libs.coil.compose)
+
+    //Pagination
+    implementation(libs.pagingCompose)
+
+    //Datastore
+    implementation(libs.androidx.datastore.preferences)
+
+    //Slider
+    implementation(libs.accompanist.pager)
+    implementation(libs.accompanist.pager.indicators)
+
+    //Navigation
+    implementation(libs.androidx.navigation.compose)
+
+    //Splash
+    implementation(libs.androidx.core.splashscreen)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -59,8 +83,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-
-    implementation("androidx.core:core-splashscreen:1.0.1")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
