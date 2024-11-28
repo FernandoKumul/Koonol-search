@@ -1,6 +1,5 @@
 package com.fernandokh.koonol_search.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -53,7 +52,6 @@ import com.fernandokh.koonol_search.data.DataStoreManager
 import com.fernandokh.koonol_search.ui.components.CustomSearchBar
 import com.fernandokh.koonol_search.ui.theme.KoonolsearchTheme
 import com.fernandokh.koonol_search.ui.theme.Screen
-import com.fernandokh.koonol_search.ui.theme.ThemeDarkOutline
 import com.fernandokh.koonol_search.ui.theme.ThemeLightOutline
 import com.fernandokh.koonol_search.viewModels.HomeViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
