@@ -90,7 +90,7 @@ fun HomeScreen(
         ) {
             HeaderSearchBar(viewModel)
             HistorySearchList(viewModel)
-            SliderTianguis(viewModel)
+            SliderTianguis(viewModel, navHostController)
         }
     }
 }
@@ -192,7 +192,7 @@ private fun HistorySearchList(viewModel: HomeViewModel) {
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-private fun SliderTianguis(viewModel: HomeViewModel) {
+private fun SliderTianguis(viewModel: HomeViewModel, navHostController: NavHostController) {
     val pagerState = rememberPagerState(initialPage = 0)
     LaunchedEffect(Unit) {
         while (true) {
@@ -257,7 +257,7 @@ private fun SliderTianguis(viewModel: HomeViewModel) {
                         contentDescription = "img_sale_stall",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .fillMaxWidth(),
+                            .fillMaxWidth().clickable { navHostController.navigate(Screen.TianguisInfo.createRoute("id")) },
                         placeholder = painterResource(R.drawable.default_image)
                     )
                     Column(
