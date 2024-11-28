@@ -205,7 +205,7 @@ private fun HeaderInformation() {
 }
 
 @Composable
-private fun BottomButton(modifier: Modifier) {
+fun BottomButton(modifier: Modifier) {
     Box(modifier) {
         ElevatedButton(
             onClick = { },
