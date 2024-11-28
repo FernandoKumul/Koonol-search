@@ -34,11 +34,7 @@ class HomeViewModel : ViewModel() {
         val historyCopy = _isHistoryList.value.toMutableList()
         historyCopy.removeAt(index)
         _isHistoryList.value = historyCopy
-        if (_dataStoreManager.value != null) {
-            viewModelScope.launch {
-                _dataStoreManager.value!!.saveHistoryList(_isHistoryList.value)
-            }
-        }
+        saveHistory()
     }
 
     fun changeValueSearch(newValue: String) {
@@ -51,17 +47,26 @@ class HomeViewModel : ViewModel() {
 
     fun searchSalesStall() {
         addQueryInHistory()
-        if (_dataStoreManager.value != null) {
-           viewModelScope.launch {
-               _dataStoreManager.value!!.saveHistoryList(_isHistoryList.value)
-           }
-        }
+        saveHistory()
         viewModelScope.launch {
             _navigationEvent.send(_isValueSearch.value)
         }
     }
 
-    fun searchSalesStallWithHistory(value: String) {
+    private fun saveHistory() {
+        if (_dataStoreManager.value != null) {
+            viewModelScope.launch {
+                _dataStoreManager.value!!.saveHistoryList(_isHistoryList.value)
+            }
+        }
+    }
+
+    fun searchSalesStallWithHistory(value: String, index: Int) {
+        val historyCopy = _isHistoryList.value.toMutableList()
+        historyCopy.removeAt(index)
+        historyCopy.add(0, value)
+        _isHistoryList.value = historyCopy
+        saveHistory()
         viewModelScope.launch {
             _navigationEvent.send(value)
         }

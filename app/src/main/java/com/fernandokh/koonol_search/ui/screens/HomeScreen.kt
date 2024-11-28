@@ -163,7 +163,7 @@ private fun HistorySearchList(viewModel: HomeViewModel) {
                     Row(
                         Modifier
                             .weight(1f)
-                            .clickable { viewModel.searchSalesStallWithHistory(log) }
+                            .clickable { viewModel.searchSalesStallWithHistory(log, index) }
                             .padding(vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
