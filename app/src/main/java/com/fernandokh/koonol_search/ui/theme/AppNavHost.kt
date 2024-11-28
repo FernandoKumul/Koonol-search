@@ -49,7 +49,7 @@ fun AppNavHost(
             Screen.Search.route,
             arguments = listOf(navArgument("query") { type = NavType.StringType })
         ) { backStackEntry ->
-            SearchScreen(navHostController, backStackEntry.arguments?.getString("query") ?: "")
+            SearchScreen(navHostController, backStackEntry.arguments?.getString("query") ?: "", dataStoreManager)
         }
 
         //Tianguis

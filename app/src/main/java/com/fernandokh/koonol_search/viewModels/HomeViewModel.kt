@@ -60,4 +60,10 @@ class HomeViewModel : ViewModel() {
             _navigationEvent.send(_isValueSearch.value)
         }
     }
+
+    fun searchSalesStallWithHistory(value: String) {
+        viewModelScope.launch {
+            _navigationEvent.send(value)
+        }
+    }
 }
