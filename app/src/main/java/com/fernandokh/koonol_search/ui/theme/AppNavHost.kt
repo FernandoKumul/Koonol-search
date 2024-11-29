@@ -15,6 +15,7 @@ import com.fernandokh.koonol_search.ui.screens.SalesStallMapScreen
 import com.fernandokh.koonol_search.ui.screens.SearchScreen
 import com.fernandokh.koonol_search.ui.screens.TianguisInfoScreen
 import com.fernandokh.koonol_search.ui.screens.TianguisMapScreen
+import com.fernandokh.koonol_search.viewModels.SalesStallMapViewModel
 import com.fernandokh.koonol_search.viewModels.SearchValueViewModel
 
 sealed class Screen(val route: String) {
@@ -24,9 +25,7 @@ sealed class Screen(val route: String) {
     data object SalesStallInfo : Screen("sales-stalls/info/{id}") {
         fun createRoute(id: String) = "sales-stalls/info/$id"
     }
-    data object SalesStallMap : Screen("sales-stalls/map/{id}") {
-        fun createRoute(id: String) = "sales-stalls/map/$id"
-    }
+    data object SalesStallMap : Screen("sales-stalls/map")
 
     data object TianguisInfo : Screen("tianguis/info/{id}") {
         fun createRoute(id: String) = "tianguis/info/$id"
@@ -44,6 +43,7 @@ fun AppNavHost(
     modifier: Modifier = Modifier, navHostController: NavHostController, dataStoreManager: DataStoreManager
 ) {
     val valueSearchViewModel: SearchValueViewModel = viewModel()
+    val salesStallMapViewModel: SalesStallMapViewModel = viewModel()
     NavHost(navHostController, startDestination = Screen.Home.route, modifier = modifier) {
         composable(Screen.Home.route) { HomeScreen(navHostController, dataStoreManager, searchValueViewModel = valueSearchViewModel) }
         composable(Screen.Search.route) { SearchScreen(navHostController, dataStoreManager, searchValueViewModel = valueSearchViewModel) }
@@ -65,15 +65,14 @@ fun AppNavHost(
         //Sales Stalls
         composable(
             Screen.SalesStallMap.route,
-            arguments = listOf(navArgument("id") { type = NavType.StringType })
-        ) { backStackEntry ->
-            SalesStallMapScreen(navHostController, backStackEntry.arguments?.getString("id"))
+        ) {
+            SalesStallMapScreen(navHostController, salesStallMapViewModel)
         }
         composable(
             Screen.SalesStallInfo.route,
             arguments = listOf(navArgument("id") { type = NavType.StringType })
         ) { backStackEntry ->
-            SalesStallInfoScreen(navHostController, backStackEntry.arguments?.getString("id"))
+            SalesStallInfoScreen(navHostController, backStackEntry.arguments?.getString("id"), salesStallMapViewModel = salesStallMapViewModel)
         }
     }
 }

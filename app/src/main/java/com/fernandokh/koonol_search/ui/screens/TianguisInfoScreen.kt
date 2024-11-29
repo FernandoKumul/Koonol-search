@@ -64,14 +64,15 @@ fun TianguisInfoScreen(navHostController: NavHostController, tianguisId: String?
                 Spacer(Modifier.height(80.dp))
             }
             TopBarGoBack(navHostController)
-            BottomButton(
-                Modifier
-                    .fillMaxWidth()
-                    .align(
-                        Alignment.BottomCenter
-                    )
-                    .padding(horizontal = 12.dp, vertical = 24.dp)
-            )
+//            BottomButton(
+//                Modifier
+//                    .fillMaxWidth()
+//                    .align(
+//                        Alignment.BottomCenter
+//                    )
+//                    .padding(horizontal = 12.dp, vertical = 24.dp),
+//                navHostController
+//            )
             //Add list here after
         }
     }

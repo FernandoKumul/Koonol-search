@@ -53,11 +53,13 @@ import com.fernandokh.koonol_search.R
 import com.fernandokh.koonol_search.data.models.SalesStallFullModel
 import com.fernandokh.koonol_search.ui.components.TopBarGoBack
 import com.fernandokh.koonol_search.ui.theme.KoonolsearchTheme
+import com.fernandokh.koonol_search.ui.theme.Screen
 import com.fernandokh.koonol_search.ui.theme.ThemeDarkStatusDisabled
 import com.fernandokh.koonol_search.ui.theme.ThemeDarkStatusEnabled
 import com.fernandokh.koonol_search.ui.theme.ThemeLightStatusDisabled
 import com.fernandokh.koonol_search.ui.theme.ThemeLightStatusEnabled
 import com.fernandokh.koonol_search.viewModels.SalesStallInfoViewModel
+import com.fernandokh.koonol_search.viewModels.SalesStallMapViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
@@ -71,7 +73,8 @@ import kotlin.math.absoluteValue
 fun SalesStallInfoScreen(
     navHostController: NavHostController,
     salesStallId: String?,
-    viewModel: SalesStallInfoViewModel = viewModel()
+    viewModel: SalesStallInfoViewModel = viewModel(),
+    salesStallMapViewModel: SalesStallMapViewModel = viewModel()
 ) {
     val isLoading by viewModel.isLoading.collectAsState()
     val isSaleStall by viewModel.isSaleStall.collectAsState()
@@ -118,13 +121,17 @@ fun SalesStallInfoScreen(
                         SalesStallInformation(isSaleStall!!)
                         Spacer(Modifier.height(80.dp))
                     }
+
                     BottomButton(
                         Modifier
                             .fillMaxWidth()
                             .align(
                                 Alignment.BottomCenter
                             )
-                            .padding(horizontal = 12.dp, vertical = 24.dp)
+                            .padding(horizontal = 12.dp, vertical = 24.dp),
+                        navHostController,
+                        isSaleStall!!,
+                        salesStallMapViewModel
                     )
                 }
             }
@@ -251,11 +258,15 @@ private fun HeaderInformation(saleStall: SalesStallFullModel) {
 }
 
 @Composable
-fun BottomButton(modifier: Modifier) {
+fun BottomButton(modifier: Modifier, navHostController: NavHostController, saleStall: SalesStallFullModel, viewModel: SalesStallMapViewModel) {
     Box(modifier) {
         ElevatedButton(
-            onClick = { },
+            onClick = {
+                viewModel.setLocations(saleStall)
+                navHostController.navigate(Screen.SalesStallMap.route)
+                      },
             colors = ButtonDefaults.buttonColors(),
+            enabled = saleStall.locations.isNotEmpty(),
             modifier = Modifier
                 .fillMaxWidth(),
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 18.dp)
