@@ -30,8 +30,8 @@ sealed class Screen(val route: String) {
     data object TianguisInfo : Screen("tianguis/info/{id}") {
         fun createRoute(id: String) = "tianguis/info/$id"
     }
-    data object TianguisMap : Screen("tianguis/map/{id}") {
-        fun createRoute(id: String) = "tianguis/map/$id"
+    data object TianguisMap : Screen("tianguis/map/{latitude}/{longitude}/{name}") {
+        fun createRoute(latitude: Double, longitude: Double, name: String) = "tianguis/map/$latitude/$longitude/$name"
     }
 
 
@@ -57,9 +57,16 @@ fun AppNavHost(
         }
         composable(
             Screen.TianguisMap.route,
-            arguments = listOf(navArgument("id") { type = NavType.StringType })
+            arguments = listOf(
+                navArgument("latitude") { type = NavType.StringType },
+                navArgument("longitude") { type = NavType.StringType },
+                navArgument("name") { type = NavType.StringType }
+            )
         ) { backStackEntry ->
-            TianguisMapScreen(navHostController, backStackEntry.arguments?.getString("id"))
+            val latitude = backStackEntry.arguments?.getString("latitude")?.toDoubleOrNull() ?: 0.0
+            val longitude = backStackEntry.arguments?.getString("longitude")?.toDoubleOrNull() ?: 0.0
+            val name = backStackEntry.arguments?.getString("name") ?: ""
+            TianguisMapScreen(navHostController, latitude, longitude, name)
         }
 
         //Sales Stalls

@@ -56,7 +56,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.fernandokh.koonol_search.R
 import com.fernandokh.koonol_search.data.DataStoreManager
-import com.fernandokh.koonol_search.data.api.TianguisModel
+import com.fernandokh.koonol_search.data.models.TianguisModel
 import com.fernandokh.koonol_search.data.models.SaleStallSearchModel
 import com.fernandokh.koonol_search.ui.components.CustomDialog
 import com.fernandokh.koonol_search.ui.components.CustomSearchBar
@@ -595,7 +595,7 @@ private fun ItemTianguis(navHostController: NavHostController, tianguis: Tiangui
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        tianguis.locality ?: "Sin localidad",
+                        tianguis.locality,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 15.sp
                     )

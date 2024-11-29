@@ -27,7 +27,7 @@ fun SalesStallMapScreen(navHostController: NavHostController, viewModel: SalesSt
                 MapComponent(
                     modifier = Modifier.fillMaxSize(),
                     marks = marks,
-                    zoom = 30f,
+                    zoom = 20f,
                     isDraggable = false,
                 )
             }

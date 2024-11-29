@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.fernandokh.koonol_search.data.api.TianguisApiService
-import com.fernandokh.koonol_search.data.api.TianguisModel
+import com.fernandokh.koonol_search.data.models.TianguisModel
 import com.fernandokh.koonol_search.utils.evaluateHttpException
 import retrofit2.HttpException
 

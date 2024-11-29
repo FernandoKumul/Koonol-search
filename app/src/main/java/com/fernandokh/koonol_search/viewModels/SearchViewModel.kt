@@ -10,7 +10,7 @@ import com.fernandokh.koonol_search.data.DataStoreManager
 import com.fernandokh.koonol_search.data.RetrofitInstance
 import com.fernandokh.koonol_search.data.api.SaleStallApiService
 import com.fernandokh.koonol_search.data.api.TianguisApiService
-import com.fernandokh.koonol_search.data.api.TianguisModel
+import com.fernandokh.koonol_search.data.models.TianguisModel
 import com.fernandokh.koonol_search.data.models.SaleStallSearchModel
 import com.fernandokh.koonol_search.data.pagingSource.SaleStallsPagingSource
 import com.fernandokh.koonol_search.data.pagingSource.TianguisPagingSource

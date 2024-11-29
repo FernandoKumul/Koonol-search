@@ -25,15 +25,14 @@ fun MapComponent(
         position = CameraPosition.fromLatLngZoom(markerPosition, zoom)
     }
 
-    // Estado del marcador
-    val markerState = rememberMarkerState(position = markerPosition)
-
     // Renderizar el mapa
     GoogleMap(
         modifier = modifier,
         cameraPositionState = cameraPositionState
     ) {
         marks.forEach { item ->
+            val markerState = rememberMarkerState(position = LatLng(item.latitude, item.longitude))
+
             Marker(
                 state = markerState,
                 title = item.title,

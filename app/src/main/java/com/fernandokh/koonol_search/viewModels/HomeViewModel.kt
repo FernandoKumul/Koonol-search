@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.fernandokh.koonol_search.data.DataStoreManager
 import com.fernandokh.koonol_search.data.RetrofitInstance
 import com.fernandokh.koonol_search.data.api.TianguisApiService
-import com.fernandokh.koonol_search.data.api.TianguisModel
+import com.fernandokh.koonol_search.data.models.TianguisModel
 import com.fernandokh.koonol_search.utils.evaluateHttpException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

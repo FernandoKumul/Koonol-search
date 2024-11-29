@@ -258,7 +258,7 @@ private fun HeaderInformation(saleStall: SalesStallFullModel) {
 }
 
 @Composable
-fun BottomButton(modifier: Modifier, navHostController: NavHostController, saleStall: SalesStallFullModel, viewModel: SalesStallMapViewModel) {
+private fun BottomButton(modifier: Modifier, navHostController: NavHostController, saleStall: SalesStallFullModel, viewModel: SalesStallMapViewModel) {
     Box(modifier) {
         ElevatedButton(
             onClick = {
