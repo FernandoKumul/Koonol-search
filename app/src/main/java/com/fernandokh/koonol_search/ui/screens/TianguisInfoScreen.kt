@@ -50,6 +50,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.fernandokh.koonol_search.R
+import com.fernandokh.koonol_search.data.models.SaleStallNamePhotoModel
 import com.fernandokh.koonol_search.data.models.TianguisModel
 import com.fernandokh.koonol_search.ui.components.TopBarGoBack
 import com.fernandokh.koonol_search.ui.theme.KoonolsearchTheme
@@ -65,9 +66,12 @@ fun TianguisInfoScreen(
 ) {
     val isLoading by viewModel.isLoading.collectAsState()
     val isTianguis by viewModel.isTianguis.collectAsState()
+    val isSaleStalls by viewModel.isSaleStalls.collectAsState()
+    val isLoadingSaleStalls by viewModel.isLoadingSaleStall.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getTianguis(tianguisId ?: "")
+        viewModel.getAllSaleStalls(tianguisId ?: "")
     }
 
     Scaffold { innerPadding ->
@@ -77,7 +81,7 @@ fun TianguisInfoScreen(
                 .padding(innerPadding)
         ) {
             when {
-                isLoading -> {
+                isLoading || isLoadingSaleStalls -> {
                     Box(
                         modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
                     ) {
@@ -104,7 +108,7 @@ fun TianguisInfoScreen(
                             .verticalScroll(rememberScrollState())
                     ) {
                         ImageTianguis(isTianguis!!)
-                        TianguisInformation(navHostController, isTianguis!!)
+                        TianguisInformation(navHostController, isTianguis!!, isSaleStalls)
                         Spacer(Modifier.height(80.dp))
                     }
                     TopBarGoBack(navHostController)
@@ -128,7 +132,11 @@ fun TianguisInfoScreen(
 }
 
 @Composable
-private fun TianguisInformation(navHostController: NavHostController, tianguis: TianguisModel) {
+private fun TianguisInformation(
+    navHostController: NavHostController,
+    tianguis: TianguisModel,
+    saleStalls: List<SaleStallNamePhotoModel>
+) {
     Column(Modifier.padding(horizontal = 12.dp, vertical = 20.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -149,7 +157,9 @@ private fun TianguisInformation(navHostController: NavHostController, tianguis: 
         if (tianguis.schedule.isEmpty()) {
             Text(
                 text = "Sin horarios disponibles",
-                modifier = Modifier.padding(12.dp, 12.dp, 12.dp, 0.dp).fillMaxWidth(),
+                modifier = Modifier
+                    .padding(12.dp, 12.dp, 12.dp, 0.dp)
+                    .fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
         } else {
@@ -203,16 +213,30 @@ private fun TianguisInformation(navHostController: NavHostController, tianguis: 
             }
 
             TextButton(onClick = { }) {
-                Text("Ver todo")
+//                Text("Ver all")
             }
 
         }
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            ItemSaleStall(modifier = Modifier.weight(1f), navHostController)
-            ItemSaleStall(modifier = Modifier.weight(1f), navHostController)
+
+        if (saleStalls.isEmpty()) {
+            Text(
+                text = "Sin horarios disponibles",
+                modifier = Modifier
+                    .padding(12.dp, 12.dp, 12.dp, 0.dp)
+                    .fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        } else {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                modifier = Modifier.fillMaxWidth(if (saleStalls.size > 1) 1f else 0.5f)
+            ) {
+                saleStalls.forEachIndexed { index, item ->
+                    if (index > 1) return@forEachIndexed
+                    ItemSaleStall(modifier = Modifier.weight(1f), navHostController, item)
+                }
+
+            }
         }
         Spacer(Modifier.height(8.dp))
     }
@@ -279,13 +303,13 @@ private fun BottomButton(
 }
 
 @Composable
-private fun ItemSaleStall(modifier: Modifier, navHostController: NavHostController) {
+private fun ItemSaleStall(modifier: Modifier, navHostController: NavHostController, saleStall: SaleStallNamePhotoModel) {
     Box(
         modifier
             .clip(shape = RoundedCornerShape(16.dp))
-            .clickable { navHostController.navigate(Screen.SalesStallInfo.createRoute("id")) }) {
+            .clickable { navHostController.navigate(Screen.SalesStallInfo.createRoute(saleStall.id)) }) {
         AsyncImage(
-            model = "https://res.cloudinary.com/dpnjtuswg/image/upload/v1722242725/dhof6oavp5dhoog3mot8.jpg",
+            model = if (saleStall.photos.isNotEmpty()) saleStall.photos[0] else null,
             contentScale = ContentScale.Crop,
             contentDescription = null,
             placeholder = painterResource(R.drawable.default_image),
@@ -301,7 +325,7 @@ private fun ItemSaleStall(modifier: Modifier, navHostController: NavHostControll
                 .padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
             Text(
-                "Nombre del tianguis djfkd fjdkafj dksfjd as",
+                saleStall.name,
                 color = Color.White,
                 fontSize = 14.sp,
                 maxLines = 2,
