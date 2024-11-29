@@ -56,6 +56,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.fernandokh.koonol_search.R
 import com.fernandokh.koonol_search.data.DataStoreManager
+import com.fernandokh.koonol_search.data.api.TianguisModel
 import com.fernandokh.koonol_search.data.models.SaleStallSearchModel
 import com.fernandokh.koonol_search.ui.components.CustomDialog
 import com.fernandokh.koonol_search.ui.components.CustomSearchBar
@@ -96,11 +97,12 @@ fun SearchScreen(
                 .padding(innerPadding)
         ) {
             FiltersDialogSaleStalls(viewModel)
+            FiltersDialogTianguis(viewModel)
             HeaderSearchBar(viewModel, isTypeSearch)
             if (isTypeSearch == viewModel.SALES_STALLS) {
                 ListSalesStall(navHostController, viewModel)
             } else {
-                ListTianguis(navHostController)
+                ListTianguis(navHostController, viewModel)
             }
         }
     }
@@ -114,7 +116,7 @@ private fun FiltersDialogSaleStalls(viewModel: SearchViewModel) {
     if (isOpen) {
         var sortOptionCurrent by remember { mutableStateOf(isSortOption) }
 
-        CustomDialog (onDismissRequest = { viewModel.closeFiltersSaleStalls() }) {
+        CustomDialog(onDismissRequest = { viewModel.closeFiltersSaleStalls() }) {
             Text(
                 "Filtros",
                 modifier = Modifier.fillMaxWidth(),
@@ -125,7 +127,7 @@ private fun FiltersDialogSaleStalls(viewModel: SearchViewModel) {
             Spacer(Modifier.height(10.dp))
 
             Text("Ordernar por", color = MaterialTheme.colorScheme.onPrimaryContainer)
-            CustomSelect(options = viewModel.optionsSort,
+            CustomSelect(options = viewModel.optionsSortSaleStall,
                 selectedOption = sortOptionCurrent,
                 onOptionSelected = { sortOptionCurrent = it })
             Spacer(Modifier.height(8.dp))
@@ -134,7 +136,7 @@ private fun FiltersDialogSaleStalls(viewModel: SearchViewModel) {
                 TextButton(
                     modifier = Modifier.weight(1f),
                     onClick = {
-                        sortOptionCurrent = viewModel.optionsSort[0]
+                        sortOptionCurrent = viewModel.optionsSortSaleStall[0]
                     }
                 ) {
                     Text("Restablecer", color = MaterialTheme.colorScheme.primary)
@@ -154,6 +156,53 @@ private fun FiltersDialogSaleStalls(viewModel: SearchViewModel) {
     }
 }
 
+@Composable
+private fun FiltersDialogTianguis(viewModel: SearchViewModel) {
+    val isSortOption by viewModel.isSortOptionTianguis.collectAsState()
+    val isOpen by viewModel.isFilterDialogTianguis.collectAsState()
+
+    if (isOpen) {
+        var sortOptionCurrent by remember { mutableStateOf(isSortOption) }
+
+        CustomDialog(onDismissRequest = { viewModel.closeFiltersTianguis() }) {
+            Text(
+                "Filtros",
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(Modifier.height(10.dp))
+
+            Text("Ordernar por", color = MaterialTheme.colorScheme.onPrimaryContainer)
+            CustomSelect(options = viewModel.optionsSortTianguis,
+                selectedOption = sortOptionCurrent,
+                onOptionSelected = { sortOptionCurrent = it })
+            Spacer(Modifier.height(8.dp))
+
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                TextButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        sortOptionCurrent = viewModel.optionsSortTianguis[0]
+                    }
+                ) {
+                    Text("Restablecer", color = MaterialTheme.colorScheme.primary)
+                }
+                Button(
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        viewModel.changeFiltersTianguis(
+                            sortOptionCurrent,
+                        )
+                        viewModel.closeFiltersTianguis()
+                    }) {
+                    Text("Aplicar")
+                }
+            }
+        }
+    }
+}
 
 @Composable
 private fun HeaderSearchBar(
@@ -173,7 +222,7 @@ private fun HeaderSearchBar(
         CustomSearchBar(
             text = isValueSearch,
             placeholder = "Buscar",
-            onSearch = { },
+            onSearch = { if (isTypeSearch == viewModel.SALES_STALLS) viewModel.searchSaleStalls() else viewModel.searchTianguis() },
             onChange = { viewModel.changeValueSearch(it) }
         )
         Spacer(Modifier.height(8.dp))
@@ -203,7 +252,7 @@ private fun HeaderSearchBar(
 @Composable
 private fun ListSalesStall(navHostController: NavHostController, viewModel: SearchViewModel) {
     val salesStalls = viewModel.saleStallPagingFlow.collectAsLazyPagingItems()
-    val totalRecords by viewModel.isTotalRecords.collectAsState()
+    val totalRecords by viewModel.isTotalRecordsSalesStall.collectAsState()
     val isLoadingSaleStalls by viewModel.isLoadingSalesStalls.collectAsState()
 
     when {
@@ -239,10 +288,14 @@ private fun ListSalesStall(navHostController: NavHostController, viewModel: Sear
         }
 
         else -> {
-            Column(Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp)) {
                 Row(
                     Modifier
-                        .fillMaxWidth().padding(bottom = 12.dp, top = 2.dp),
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp, top = 2.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -261,7 +314,7 @@ private fun ListSalesStall(navHostController: NavHostController, viewModel: Sear
                         )
                     }
                 }
-                LazyColumn (verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(salesStalls.itemCount) {
                         salesStalls[it]?.let { saleStall ->
                             ItemSalesStall(navHostController, saleStall)
@@ -317,33 +370,121 @@ private fun ListSalesStall(navHostController: NavHostController, viewModel: Sear
 }
 
 @Composable
-private fun ListTianguis(navHostController: NavHostController) {
-    Column(Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
-        Row(
-            Modifier
-                .fillMaxWidth().padding(bottom = 12.dp, top = 2.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Resultados: 00",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+private fun ListTianguis(navHostController: NavHostController, viewModel: SearchViewModel) {
+    val tianguis = viewModel.tianguisPagingFlow.collectAsLazyPagingItems()
+    val totalRecords by viewModel.isTotalRecordsTianguis.collectAsState()
+    val isLoadingTianguis by viewModel.isLoadingTianguis.collectAsState()
 
-            IconButton(
-                onClick = { }
+    when {
+        //Carga inicial
+        (tianguis.loadState.refresh is LoadState.Loading || isLoadingTianguis) && tianguis.itemCount == 0 -> {
+            Box(
+                modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    modifier = Modifier.size(28.dp),
-                    painter = painterResource(R.drawable.baseline_filter_list_alt_24),
-                    contentDescription = "ic_filter",
+                CircularProgressIndicator()
+            }
+        }
+
+        //Estado vacio
+        tianguis.loadState.refresh is LoadState.NotLoading && tianguis.itemCount == 0 -> {
+            Box(
+                Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No se encontraron tianguis",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(12.dp, 8.dp, 12.dp, 0.dp)
                 )
             }
         }
-        Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            ItemTianguis(navHostController)
-            ItemTianguis(navHostController)
-            ItemTianguis(navHostController)
+
+        //Error
+        tianguis.loadState.hasError -> {
+            Box(
+                Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Ha ocurrido un error")
+            }
+        }
+
+        else -> {
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp)) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp, top = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Resultados: $totalRecords",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+
+                    IconButton(
+                        onClick = { viewModel.openFiltersTianguis() }
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(28.dp),
+                            painter = painterResource(R.drawable.baseline_filter_list_alt_24),
+                            contentDescription = "ic_filter",
+                        )
+                    }
+                }
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(tianguis.itemCount) {
+                        tianguis[it]?.let { tianguis ->
+                            ItemTianguis(navHostController, tianguis)
+                        }
+                    }
+
+                    when {
+                        tianguis.loadState.append is LoadState.NotLoading && tianguis.loadState.append.endOfPaginationReached -> {
+                            if (tianguis.itemCount >= 5) {
+                                item {
+                                    Text(
+                                        text = "Has llegado al final de la lista",
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(0.dp, 12.dp),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+
+                        }
+
+                        tianguis.loadState.append is LoadState.Loading -> {
+                            // Loader al final de la lista
+                            item {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp)
+                                        .wrapContentWidth(Alignment.CenterHorizontally)
+                                )
+                            }
+                        }
+
+                        tianguis.loadState.append is LoadState.Error -> {
+                            item {
+                                Text(
+                                    text = "Error al cargar más datos",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(0.dp, 12.dp),
+                                    color = MaterialTheme.colorScheme.error,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -412,10 +553,10 @@ private fun ItemSalesStall(navHostController: NavHostController, saleStall: Sale
 }
 
 @Composable
-private fun ItemTianguis(navHostController: NavHostController) {
+private fun ItemTianguis(navHostController: NavHostController, tianguis: TianguisModel) {
     OutlinedCard(
         onClick = {
-            navHostController.navigate(Screen.TianguisInfo.createRoute("12345")) {
+            navHostController.navigate(Screen.TianguisInfo.createRoute(tianguis.id)) {
                 launchSingleTop = true
             }
         },
@@ -434,7 +575,7 @@ private fun ItemTianguis(navHostController: NavHostController) {
                 Text(
                     fontWeight = FontWeight.Medium,
                     fontSize = 17.sp,
-                    text = "Nombre del Tianguis",
+                    text = tianguis.name,
                     modifier = Modifier.padding(bottom = 6.dp)
                 )
                 Row {
@@ -444,15 +585,15 @@ private fun ItemTianguis(navHostController: NavHostController) {
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        "Cancún",
+                        tianguis.locality ?: "Sin localidad",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 15.sp
                     )
                 }
             }
             AsyncImage(
-                model = "https://res.cloudinary.com/dpnjtuswg/image/upload/v1722242725/dhof6oavp5dhoog3mot8.jpg",
-                contentDescription = "img_user",
+                model = tianguis.photo,
+                contentDescription = "img_photo",
                 contentScale = ContentScale.Crop,
                 placeholder = painterResource(R.drawable.default_image),
                 modifier = Modifier

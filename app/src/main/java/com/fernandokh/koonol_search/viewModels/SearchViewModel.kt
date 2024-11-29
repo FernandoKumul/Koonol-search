@@ -9,8 +9,11 @@ import androidx.paging.cachedIn
 import com.fernandokh.koonol_search.data.DataStoreManager
 import com.fernandokh.koonol_search.data.RetrofitInstance
 import com.fernandokh.koonol_search.data.api.SaleStallApiService
+import com.fernandokh.koonol_search.data.api.TianguisApiService
+import com.fernandokh.koonol_search.data.api.TianguisModel
 import com.fernandokh.koonol_search.data.models.SaleStallSearchModel
 import com.fernandokh.koonol_search.data.pagingSource.SaleStallsPagingSource
+import com.fernandokh.koonol_search.data.pagingSource.TianguisPagingSource
 import com.fernandokh.koonol_search.utils.SelectOption
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +24,7 @@ class SearchViewModel: ViewModel() {
     val TIANGUIS = "tianguis"
 
     private val apiServiceSaleStall = RetrofitInstance.create(SaleStallApiService::class.java)
+    private val apiServiceTianguis = RetrofitInstance.create(TianguisApiService::class.java)
 
     private val _toastMessage = MutableStateFlow<String?>(null)
     val toastMessage: StateFlow<String?> get() = _toastMessage
@@ -33,18 +37,18 @@ class SearchViewModel: ViewModel() {
     private val _isTypeSearch = MutableStateFlow(SALES_STALLS)
     val isTypeSearch = _isTypeSearch
 
+    //Pagination SaleStalls
     private val _isLoadingSalesStalls = MutableStateFlow(true)
     val isLoadingSalesStalls: StateFlow<Boolean> = _isLoadingSalesStalls
 
-    //Pagination SaleStalls
     private val _saleStallPagingFlow =
         MutableStateFlow<PagingData<SaleStallSearchModel>>(PagingData.empty())
     val saleStallPagingFlow: StateFlow<PagingData<SaleStallSearchModel>> = _saleStallPagingFlow
 
-    private val _isTotalRecords = MutableStateFlow(0)
-    val isTotalRecords: StateFlow<Int> = _isTotalRecords
+    private val _isTotalRecordsSalesStall = MutableStateFlow(0)
+    val isTotalRecordsSalesStall: StateFlow<Int> = _isTotalRecordsSalesStall
 
-    val optionsSort = listOf(
+    val optionsSortSaleStall = listOf(
         SelectOption("Más relevantes", "most-relevant"),
         SelectOption("Más nuevos", "newest"),
         SelectOption("Más viejos", "oldest"),
@@ -52,11 +56,36 @@ class SearchViewModel: ViewModel() {
         SelectOption("Z-A", "z-a"),
     )
 
-    private val _isSortOptionSaleStall = MutableStateFlow(optionsSort[0])
+    private val _isSortOptionSaleStall = MutableStateFlow(optionsSortSaleStall[0])
     val isSortOptionSaleStall: StateFlow<SelectOption> = _isSortOptionSaleStall
 
     private val _isFiltersDialogSaleStall = MutableStateFlow(false)
     val isFilterDialogSaleStall = _isFiltersDialogSaleStall
+
+    //Pagination Tianguis
+    val optionsSortTianguis = listOf(
+        SelectOption("Más nuevos", "newest"),
+        SelectOption("Más viejos", "oldest"),
+        SelectOption("A-Z", "a-z"),
+        SelectOption("Z-A", "z-a"),
+    )
+
+    private val _isLoadingTianguis = MutableStateFlow(true)
+    val isLoadingTianguis: StateFlow<Boolean> = _isLoadingTianguis
+
+    private val _tianguisPagingFlow =
+        MutableStateFlow<PagingData<TianguisModel>>(PagingData.empty())
+    val tianguisPagingFlow: StateFlow<PagingData<TianguisModel>> = _tianguisPagingFlow
+
+    private val _isTotalRecordsTianguis = MutableStateFlow(0)
+    val isTotalRecordsTianguis: StateFlow<Int> = _isTotalRecordsTianguis
+
+    private val _isSortOptionTianguis = MutableStateFlow(optionsSortTianguis[0])
+    val isSortOptionTianguis: StateFlow<SelectOption> = _isSortOptionTianguis
+
+    private val _isFiltersDialogTianguis = MutableStateFlow(false)
+    val isFilterDialogTianguis = _isFiltersDialogTianguis
+
 
     fun showToast(message: String) {
         _toastMessage.value = message
@@ -82,7 +111,7 @@ class SearchViewModel: ViewModel() {
         if (newType == SALES_STALLS) {
             searchSaleStalls()
         } else {
-            //
+            searchTianguis()
         }
     }
 
@@ -91,12 +120,25 @@ class SearchViewModel: ViewModel() {
         searchSaleStalls()
     }
 
+    fun changeFiltersTianguis(sort: SelectOption) {
+        _isSortOptionTianguis.value = sort
+        searchTianguis()
+    }
+
     fun closeFiltersSaleStalls() {
         _isFiltersDialogSaleStall.value = false
     }
 
     fun openFiltersSaleStalls() {
         _isFiltersDialogSaleStall.value = true
+    }
+
+    fun closeFiltersTianguis() {
+        _isFiltersDialogTianguis.value = false
+    }
+
+    fun openFiltersTianguis() {
+        _isFiltersDialogTianguis.value = true
     }
 
     fun searchSaleStalls() {
@@ -109,13 +151,33 @@ class SearchViewModel: ViewModel() {
                         _isValueSearch.value,
                         _isSortOptionSaleStall.value.value,
                     ) {
-                        _isTotalRecords.value = it
+                        _isTotalRecordsSalesStall.value = it
                     }
                 }.flow.cachedIn(viewModelScope)
 
             pager.collect { pagingData ->
                 _saleStallPagingFlow.value = pagingData
                 _isLoadingSalesStalls.value = false
+            }
+        }
+    }
+
+    fun searchTianguis() {
+        _isLoadingTianguis.value = true
+        viewModelScope.launch {
+            val pager =
+                Pager(PagingConfig(pageSize = 20, prefetchDistance = 3, initialLoadSize = 20)) {
+                    TianguisPagingSource(
+                        apiServiceTianguis,
+                        _isValueSearch.value,
+                        _isSortOptionTianguis.value.value,
+                    ) {
+                        _isTotalRecordsTianguis.value = it
+                    }
+                }.flow.cachedIn(viewModelScope)
+            pager.collect { pagingData ->
+                _tianguisPagingFlow.value = pagingData
+                _isLoadingTianguis.value = false
             }
         }
     }

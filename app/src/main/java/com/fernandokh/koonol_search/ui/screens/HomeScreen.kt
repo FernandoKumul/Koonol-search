@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -73,6 +74,7 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         viewModel.setDataStoreManager(dataStoreManager)
         viewModel.setHistoryList(dataStoreManager.getHistoryList().first())
+        viewModel.getTianguis()
     }
 
     LaunchedEffect(Unit) {
@@ -124,34 +126,20 @@ private fun HeaderSearchBar(
 private fun HistorySearchList(viewModel: HomeViewModel) {
     val isHistoryList by viewModel.isHistoryList.collectAsState()
 
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(16.dp, 16.dp),
-    ) {
-        Text(
-            "Busquedas recientes",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.fillMaxWidth()
-        )
+    if (isHistoryList.isNotEmpty()) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(16.dp, 16.dp),
+        ) {
+            Text(
+                "Busquedas recientes",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.fillMaxWidth()
+            )
 
-        if (isHistoryList.isEmpty()) {
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .height(80.dp)) {
-                Text(
-                    "Sin busquedas recientes",
-                    Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.Center),
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        } else {
             isHistoryList.forEachIndexed { index, log ->
                 if (index >= 3) return@forEachIndexed
 
@@ -183,24 +171,31 @@ private fun HistorySearchList(viewModel: HomeViewModel) {
                         Icon(imageVector = Icons.Default.Clear, contentDescription = "ic_clear")
                     }
                 }
+
             }
-
         }
-
+    } else {
+        Spacer(Modifier.height(16.dp))
     }
+
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun SliderTianguis(viewModel: HomeViewModel, navHostController: NavHostController) {
     val pagerState = rememberPagerState(initialPage = 0)
+    val isLoadingTianguis by viewModel.isLoadingTianguis.collectAsState()
+    val isTianguis by viewModel.isListTianguis.collectAsState()
+
     LaunchedEffect(Unit) {
-        while (true) {
-            yield()
-            delay(5000)
-            pagerState.animateScrollToPage(
-                page = (pagerState.currentPage + 1) % (pagerState.pageCount)
-            )
+        if (!isLoadingTianguis && isTianguis.isNotEmpty()) {
+            while (true) {
+                yield()
+                delay(5000)
+                pagerState.animateScrollToPage(
+                    page = (pagerState.currentPage + 1) % (pagerState.pageCount)
+                )
+            }
         }
     }
 
@@ -213,82 +208,126 @@ private fun SliderTianguis(viewModel: HomeViewModel, navHostController: NavHostC
                 .fillMaxWidth()
                 .padding(16.dp, 0.dp)
         )
-        HorizontalPager(
-//            count = saleStall.photos.size,
-            count = 3,
-            state = pagerState,
-            modifier = Modifier
-                .height(400.dp)
-                .fillMaxWidth()
-        ) { page ->
-            Card(
-                modifier = Modifier
-                    .graphicsLayer {
-                        val pageOffset = calculateCurrentOffsetForPage(page).absoluteValue
 
-                        lerp(
-                            start = 0.85f,
-                            stop = 1f,
-                            fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                        ).also { scale ->
-                            scaleX = scale
-                            scaleY = scale
-                        }
-
-                        alpha = lerp(
-                            start = 0.5f,
-                            stop = 1f,
-                            fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                        )
-                    },
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.Transparent
-                ),
-            ) {
+        when {
+            isLoadingTianguis -> {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
-                        .shadow(4.dp, shape = RoundedCornerShape(16.dp)),
+                        .height(160.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    AsyncImage(
-                        //                    model = saleStall.photos[page],
-                        model = "https://res.cloudinary.com/dpnjtuswg/image/upload/v1722242725/dhof6oavp5dhoog3mot8.jpg",
-                        contentDescription = "img_sale_stall",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth().clickable { navHostController.navigate(Screen.TianguisInfo.createRoute("id")) },
-                        placeholder = painterResource(R.drawable.default_image)
-                    )
-                    Column(
+                    CircularProgressIndicator()
+                }
+            }
+
+            isTianguis.isEmpty() -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(160.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "No se encontraron Tianguis",
                         Modifier
-                            .align(Alignment.BottomCenter)
                             .fillMaxWidth()
-                            .padding(8.dp)
-                            .background(Color(0xFF323236).copy(0.85f), RoundedCornerShape(16.dp))
-                            .padding(12.dp)
+                            .align(Alignment.Center),
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            else -> {
+                HorizontalPager(
+                    count = isTianguis.size,
+                    state = pagerState,
+                    modifier = Modifier
+                        .height(400.dp)
+                        .fillMaxWidth()
+                ) { page ->
+                    Card(
+                        modifier = Modifier
+                            .graphicsLayer {
+                                val pageOffset = calculateCurrentOffsetForPage(page).absoluteValue
+
+                                lerp(
+                                    start = 0.85f,
+                                    stop = 1f,
+                                    fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                                ).also { scale ->
+                                    scaleX = scale
+                                    scaleY = scale
+                                }
+
+                                alpha = lerp(
+                                    start = 0.5f,
+                                    stop = 1f,
+                                    fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                                )
+                            },
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.Transparent
+                        ),
                     ) {
-                        Text("Tianguis de la Región 100", color = Color.White)
-                        Row {
-                            Icon(
-                                imageVector = Icons.Outlined.LocationOn,
-                                contentDescription = "ic_location",
-                                tint = ThemeLightOutline
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .shadow(4.dp, shape = RoundedCornerShape(16.dp)),
+                        ) {
+                            AsyncImage(
+                                model = isTianguis[page].photo,
+                                contentDescription = "img_sale_stall",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        navHostController.navigate(
+                                            Screen.TianguisInfo.createRoute(isTianguis[page].id)
+                                        )
+                                    },
+                                placeholder = painterResource(R.drawable.default_image)
                             )
-                            Text("Cancún", color = ThemeLightOutline, fontSize = 15.sp)
+                            Column(
+                                Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .fillMaxWidth()
+                                    .padding(8.dp)
+                                    .background(
+                                        Color(0xFF323236).copy(0.85f),
+                                        RoundedCornerShape(16.dp)
+                                    )
+                                    .padding(12.dp)
+                            ) {
+                                Text(isTianguis[page].name, color = Color.White)
+                                Row {
+                                    Icon(
+                                        imageVector = Icons.Outlined.LocationOn,
+                                        contentDescription = "ic_location",
+                                        tint = ThemeLightOutline
+                                    )
+                                    Text(
+                                        isTianguis[page].locality ?: "Sin ubicación",
+                                        color = ThemeLightOutline,
+                                        fontSize = 15.sp
+                                    )
+                                }
+                            }
                         }
                     }
                 }
+
+                HorizontalPagerIndicator(
+                    pagerState = pagerState,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally),
+                    activeColor = MaterialTheme.colorScheme.primary,
+                    inactiveColor = MaterialTheme.colorScheme.outlineVariant,
+                )
             }
         }
-
-        HorizontalPagerIndicator(
-            pagerState = pagerState,
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally),
-            activeColor = MaterialTheme.colorScheme.primary,
-            inactiveColor = MaterialTheme.colorScheme.outlineVariant,
-        )
     }
 
 }
