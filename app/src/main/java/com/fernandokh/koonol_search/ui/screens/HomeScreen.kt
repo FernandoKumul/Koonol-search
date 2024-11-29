@@ -55,6 +55,7 @@ import com.fernandokh.koonol_search.ui.theme.KoonolsearchTheme
 import com.fernandokh.koonol_search.ui.theme.Screen
 import com.fernandokh.koonol_search.ui.theme.ThemeLightOutline
 import com.fernandokh.koonol_search.viewModels.HomeViewModel
+import com.fernandokh.koonol_search.viewModels.SearchValueViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
@@ -69,9 +70,12 @@ import kotlin.math.absoluteValue
 fun HomeScreen(
     navHostController: NavHostController,
     dataStoreManager: DataStoreManager,
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = viewModel(),
+    searchValueViewModel: SearchValueViewModel = viewModel()
 ) {
+
     LaunchedEffect(Unit) {
+        viewModel.changeValueSearch("")
         viewModel.setDataStoreManager(dataStoreManager)
         viewModel.setHistoryList(dataStoreManager.getHistoryList().first())
         viewModel.getTianguis()
@@ -79,7 +83,8 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         viewModel.navigationEvent.collect { event ->
-            navHostController.navigate(Screen.Search.createRoute(event))
+            searchValueViewModel.setValueSearch(event)
+            navHostController.navigate(Screen.Search.route)
         }
     }
 

@@ -2,6 +2,7 @@ package com.fernandokh.koonol_search.ui.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -14,12 +15,11 @@ import com.fernandokh.koonol_search.ui.screens.SalesStallMapScreen
 import com.fernandokh.koonol_search.ui.screens.SearchScreen
 import com.fernandokh.koonol_search.ui.screens.TianguisInfoScreen
 import com.fernandokh.koonol_search.ui.screens.TianguisMapScreen
+import com.fernandokh.koonol_search.viewModels.SearchValueViewModel
 
 sealed class Screen(val route: String) {
     data object Home : Screen("home")
-    data object Search : Screen("search/{query}") {
-        fun createRoute(query: String) = "search/$query"
-    }
+    data object Search : Screen("search")
 
     data object SalesStallInfo : Screen("sales-stalls/info/{id}") {
         fun createRoute(id: String) = "sales-stalls/info/$id"
@@ -43,14 +43,10 @@ sealed class Screen(val route: String) {
 fun AppNavHost(
     modifier: Modifier = Modifier, navHostController: NavHostController, dataStoreManager: DataStoreManager
 ) {
+    val valueSearchViewModel: SearchValueViewModel = viewModel()
     NavHost(navHostController, startDestination = Screen.Home.route, modifier = modifier) {
-        composable(Screen.Home.route) { HomeScreen(navHostController, dataStoreManager) }
-        composable(
-            Screen.Search.route,
-            arguments = listOf(navArgument("query") { type = NavType.StringType })
-        ) { backStackEntry ->
-            SearchScreen(navHostController, backStackEntry.arguments?.getString("query") ?: "", dataStoreManager)
-        }
+        composable(Screen.Home.route) { HomeScreen(navHostController, dataStoreManager, searchValueViewModel = valueSearchViewModel) }
+        composable(Screen.Search.route) { SearchScreen(navHostController, dataStoreManager, searchValueViewModel = valueSearchViewModel) }
 
         //Tianguis
         composable(

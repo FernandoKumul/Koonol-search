@@ -63,15 +63,17 @@ import com.fernandokh.koonol_search.ui.components.CustomSearchBar
 import com.fernandokh.koonol_search.ui.components.CustomSelect
 import com.fernandokh.koonol_search.ui.theme.KoonolsearchTheme
 import com.fernandokh.koonol_search.ui.theme.Screen
+import com.fernandokh.koonol_search.viewModels.SearchValueViewModel
 import com.fernandokh.koonol_search.viewModels.SearchViewModel
 
 @Composable
 fun SearchScreen(
     navHostController: NavHostController,
-    query: String,
     dataStoreManager: DataStoreManager,
-    viewModel: SearchViewModel = viewModel()
+    viewModel: SearchViewModel = viewModel(),
+    searchValueViewModel: SearchValueViewModel = viewModel()
 ) {
+
     val isTypeSearch by viewModel.isTypeSearch.collectAsState()
     val context = LocalContext.current
     val toastMessage by viewModel.toastMessage.collectAsState()
@@ -85,8 +87,8 @@ fun SearchScreen(
     }
 
     LaunchedEffect(Unit) {
+        viewModel.changeValueSearch(searchValueViewModel.getValueSearch())
         viewModel.setDataStoreManager(dataStoreManager)
-        viewModel.changeValueSearch(query)
         viewModel.searchSaleStalls()
     }
 
@@ -98,7 +100,7 @@ fun SearchScreen(
         ) {
             FiltersDialogSaleStalls(viewModel)
             FiltersDialogTianguis(viewModel)
-            HeaderSearchBar(viewModel, isTypeSearch)
+            HeaderSearchBar(viewModel, searchValueViewModel,isTypeSearch)
             if (isTypeSearch == viewModel.SALES_STALLS) {
                 ListSalesStall(navHostController, viewModel)
             } else {
@@ -207,6 +209,7 @@ private fun FiltersDialogTianguis(viewModel: SearchViewModel) {
 @Composable
 private fun HeaderSearchBar(
     viewModel: SearchViewModel,
+    searchValueViewModel: SearchValueViewModel,
     isTypeSearch: String
 ) {
     val isValueSearch by viewModel.isValueSearch.collectAsState()
@@ -222,7 +225,14 @@ private fun HeaderSearchBar(
         CustomSearchBar(
             text = isValueSearch,
             placeholder = "Buscar",
-            onSearch = { if (isTypeSearch == viewModel.SALES_STALLS) viewModel.searchSaleStalls() else viewModel.searchTianguis() },
+            onSearch = {
+                searchValueViewModel.setValueSearch(isValueSearch)
+                if (isTypeSearch == viewModel.SALES_STALLS) {
+                    viewModel.searchSaleStalls()
+                } else {
+                    viewModel.searchTianguis()
+                }
+                       },
             onChange = { viewModel.changeValueSearch(it) }
         )
         Spacer(Modifier.height(8.dp))
@@ -611,7 +621,7 @@ private fun PrevHomeScreen() {
     val dataStoreManager = DataStoreManager(LocalContext.current)
 
     KoonolsearchTheme(dynamicColor = false) {
-        SearchScreen(navHostController, "", dataStoreManager)
+        SearchScreen(navHostController, dataStoreManager)
     }
 }
 

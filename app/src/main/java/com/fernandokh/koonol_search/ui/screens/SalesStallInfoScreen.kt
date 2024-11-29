@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,9 +30,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,20 +40,24 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.fernandokh.koonol_search.R
+import com.fernandokh.koonol_search.data.models.SalesStallFullModel
 import com.fernandokh.koonol_search.ui.components.TopBarGoBack
 import com.fernandokh.koonol_search.ui.theme.KoonolsearchTheme
 import com.fernandokh.koonol_search.ui.theme.ThemeDarkStatusDisabled
 import com.fernandokh.koonol_search.ui.theme.ThemeDarkStatusEnabled
 import com.fernandokh.koonol_search.ui.theme.ThemeLightStatusDisabled
 import com.fernandokh.koonol_search.ui.theme.ThemeLightStatusEnabled
+import com.fernandokh.koonol_search.viewModels.SalesStallInfoViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
@@ -64,38 +68,74 @@ import kotlinx.coroutines.yield
 import kotlin.math.absoluteValue
 
 @Composable
-fun SalesStallInfoScreen(navHostController: NavHostController, salesStallId: String?) {
+fun SalesStallInfoScreen(
+    navHostController: NavHostController,
+    salesStallId: String?,
+    viewModel: SalesStallInfoViewModel = viewModel()
+) {
+    val isLoading by viewModel.isLoading.collectAsState()
+    val isSaleStall by viewModel.isSaleStall.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.getSaleStall(salesStallId ?: "")
+    }
+
     Scaffold { innerPadding ->
         Box(
             Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-            ) {
-                ImagesSlider()
-                HeaderInformation()
-                SalesStallInformation()
-                Spacer(Modifier.height(80.dp))
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                isSaleStall == null -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No se encontró el puesto",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(12.dp, 8.dp, 12.dp, 0.dp)
+                        )
+                    }
+                }
+
+                else -> {
+                    Column(
+                        Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        ImagesSlider(isSaleStall!!.photos)
+                        HeaderInformation(isSaleStall!!)
+                        SalesStallInformation(isSaleStall!!)
+                        Spacer(Modifier.height(80.dp))
+                    }
+                    BottomButton(
+                        Modifier
+                            .fillMaxWidth()
+                            .align(
+                                Alignment.BottomCenter
+                            )
+                            .padding(horizontal = 12.dp, vertical = 24.dp)
+                    )
+                }
             }
             TopBarGoBack(navHostController)
-            BottomButton(
-                Modifier
-                    .fillMaxWidth()
-                    .align(
-                        Alignment.BottomCenter
-                    )
-                    .padding(horizontal = 12.dp, vertical = 24.dp)
-            )
+
         }
     }
 }
 
 @Composable
-private fun SalesStallInformation() {
+private fun SalesStallInformation(saleStall: SalesStallFullModel) {
     Column(Modifier.padding(horizontal = 12.dp, vertical = 20.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -113,10 +153,18 @@ private fun SalesStallInformation() {
             )
         }
         Spacer(Modifier.height(8.dp))
-        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("Lunes 4:00 pm - 9:00 am")
-            Text("Lunes 4:00 pm - 9:00 am")
-            Text("Lunes 4:00 pm - 9:00 am")
+        if (saleStall.locations.isEmpty()) {
+            Text(
+                text = "Sin horarios disponibles",
+                modifier = Modifier.padding(12.dp, 12.dp, 12.dp, 0.dp).fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        } else {
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                saleStall.locations.forEach { item ->
+                    Text("${item.scheduleTianguisId.dayWeek} ${item.scheduleTianguisId.startTime} - ${item.scheduleTianguisId.endTime}")
+                }
+            }
         }
         Spacer(Modifier.height(20.dp))
         Row(
@@ -135,14 +183,13 @@ private fun SalesStallInformation() {
             )
         }
         Spacer(Modifier.height(8.dp))
-        Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque leo purus, aliquet eu dolor vitae, facilisis vulputate orci.")
+        Text(saleStall.description)
     }
 }
 
 
-
 @Composable
-private fun HeaderInformation() {
+private fun HeaderInformation(saleStall: SalesStallFullModel) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -150,23 +197,22 @@ private fun HeaderInformation() {
             .padding(horizontal = 12.dp, vertical = 20.dp)
     ) {
         Text(
-            "Nombre del puesto",
+            saleStall.name,
             fontSize = 20.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(8.dp))
 
-        val status by remember { mutableStateOf(true) }
 
         val colorStatus = when {
-            isSystemInDarkTheme() && status -> ThemeDarkStatusEnabled
-            isSystemInDarkTheme() && !status -> ThemeDarkStatusDisabled
-            !isSystemInDarkTheme() && status -> ThemeLightStatusEnabled
+            isSystemInDarkTheme() && saleStall.active -> ThemeDarkStatusEnabled
+            isSystemInDarkTheme() && !saleStall.active -> ThemeDarkStatusDisabled
+            !isSystemInDarkTheme() && saleStall.active -> ThemeLightStatusEnabled
             else -> ThemeLightStatusDisabled
         }
 
-        Row (horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Box(
                 Modifier
                     .clip(shape = RoundedCornerShape(12.dp))
@@ -175,7 +221,7 @@ private fun HeaderInformation() {
             ) {
                 Text(
                     fontSize = 15.sp,
-                    text = if (status) "Abierto" else "Cerrado"
+                    text = if (saleStall.active) "Abierto" else "Cerrado"
                 )
             }
             Box(
@@ -186,7 +232,7 @@ private fun HeaderInformation() {
             ) {
                 Text(
                     fontSize = 15.sp,
-                    text = "Categoría"
+                    text = saleStall.subCategoryId.categoryId.name
                 )
             }
             Box(
@@ -197,7 +243,7 @@ private fun HeaderInformation() {
             ) {
                 Text(
                     fontSize = 15.sp,
-                    text = "Sub-Categoría"
+                    text = saleStall.subCategoryId.name
                 )
             }
         }
@@ -231,22 +277,23 @@ fun BottomButton(modifier: Modifier) {
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-private fun ImagesSlider() {
+private fun ImagesSlider(photos: List<String>) {
     val pagerState = rememberPagerState(initialPage = 0)
     LaunchedEffect(Unit) {
-        while (true) {
-            yield()
-            delay(5000)
-            pagerState.animateScrollToPage(
-                page = (pagerState.currentPage + 1) % (pagerState.pageCount)
-            )
+        if (photos.isNotEmpty()) {
+            while (true) {
+                yield()
+                delay(5000)
+                pagerState.animateScrollToPage(
+                    page = (pagerState.currentPage + 1) % (pagerState.pageCount)
+                )
+            }
         }
     }
 
     Box(Modifier.background(MaterialTheme.colorScheme.primaryContainer)) {
         HorizontalPager(
-//            count = saleStall.photos.size,
-            count = 3,
+            count = photos.size,
             state = pagerState,
             modifier = Modifier
                 .height(400.dp)
@@ -281,8 +328,7 @@ private fun ImagesSlider() {
                         .fillMaxWidth()
                 ) {
                     AsyncImage(
-                        //                    model = saleStall.photos[page],
-                        model = "https://res.cloudinary.com/dpnjtuswg/image/upload/v1722242725/dhof6oavp5dhoog3mot8.jpg",
+                        model = photos[page],
                         contentDescription = "img_sale_stall",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
