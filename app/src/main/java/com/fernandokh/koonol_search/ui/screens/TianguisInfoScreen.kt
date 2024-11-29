@@ -120,8 +120,8 @@ fun TianguisInfoScreen(
                             )
                             .padding(horizontal = 12.dp, vertical = 24.dp),
                         navHostController,
-                        latitude = isTianguis!!.markerMap.coordinates[0],
-                        longitude = isTianguis!!.markerMap.coordinates[1],
+                        latitude = isTianguis!!.markerMap.coordinates[1],
+                        longitude = isTianguis!!.markerMap.coordinates[0],
                         name = isTianguis!!.name
                     )
                     //Add list here after

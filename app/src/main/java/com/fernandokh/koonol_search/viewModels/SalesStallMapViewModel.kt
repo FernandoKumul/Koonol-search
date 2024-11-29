@@ -15,8 +15,8 @@ class SalesStallMapViewModel : ViewModel() {
     fun setLocations(saleStall: SalesStallFullModel) {
         val marks = saleStall.locations.map {
             MarkLocation(
-                latitude = it.markerMap.coordinates[0],
-                longitude = it.markerMap.coordinates[1],
+                latitude = it.markerMap.coordinates[1],
+                longitude = it.markerMap.coordinates[0],
                 saleStall.name
             )
         }
