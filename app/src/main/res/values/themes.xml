@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="Theme.MySplashScreen" parent="Theme.SplashScreen">
 
-    <style name="Theme.Koonolsearch" parent="android:Theme.Material.Light.NoActionBar" />
+        <item name="windowSplashScreenBackground">#FFFFFF</item>
+
+        <item name="windowSplashScreenAnimatedIcon">@drawable/b_logolight</item>
+
+        <item name="postSplashScreenTheme">@style/Theme.Koonolsearch</item>
+    </style>
+
+    <style name="Theme.Koonolsearch" parent="android:Theme.Material.Light.NoActionBar" >
+    </style>
 </resources>
